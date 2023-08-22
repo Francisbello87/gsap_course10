@@ -13,36 +13,45 @@ const slides = gsap.utils.toArray(".slide");
 const numSlides = slides.length;
 let slideIndex = 0;
 let currentSlide;
-let animatingOut = false
+let animatingOut = false;
 console.log(numSlides);
 
-
-function hideSlide(){
-  if(!animatingOut){
-    gsap.to(currentSlide, {opacity:0, onComplete: showSlide})
-    gsap.to(currentSlide.querySelector('.number'), {scale:0})
-    animatingOut = true
+function hideSlide() {
+  if (!animatingOut) {
+    gsap.to(currentSlide, { opacity: 0, onComplete: showSlide });
+    gsap.to(currentSlide.querySelector(".number"), { scale: 0 });
+    animatingOut = true;
   }
- 
 }
 function showSlide(index) {
   // if (currentSlide) {
   //   gsap.to(currentSlide, { opacity: 0 });
   // }
-  animatingOut = false
+  animatingOut = false;
   currentSlide = slides[slideIndex];
-  gsap.to(currentSlide, { opacity: 1 })
-  gsap.fromTo(currentSlide.querySelector('.number'), {scale:0},{scale:1, onComplete: () =>{
-    if(autoPlay){
-      progressTimer.restart()
+  gsap.to(currentSlide, { opacity: 1 });
+  gsap.fromTo(
+    currentSlide.querySelector(".number"),
+    { scale: 0 },
+    {
+      scale: 1,
+      onComplete: () => {
+        if (autoPlay) {
+          progressTimer.restart();
+        }
+      },
     }
-  }})
+  );
 }
 
 showSlide();
 
 nextBtn.addEventListener("click", () => {
-nextSlide()
+  if (autoPlay) {
+    stopAutoplay();
+  }
+
+  nextSlide();
 });
 
 prevBtn.addEventListener("click", () => {
@@ -51,10 +60,13 @@ prevBtn.addEventListener("click", () => {
   } else {
     slideIndex = slides.length - 1;
   }
-  hideSlide()
+  if (autoPlay) {
+    stopAutoplay();
+  }
+  hideSlide();
 });
 
-const delay = gsap.delayedCall(2, nextSlide)
+const delay = gsap.delayedCall(2, nextSlide);
 
 function nextSlide() {
   if (slideIndex < numSlides - 1) {
@@ -62,47 +74,53 @@ function nextSlide() {
   } else {
     slideIndex = 0;
   }
-  hideSlide()
+  hideSlide();
   // showSlide(slideIndex)
   // if(autoPlay){
   //   delay.restart(true)
   // }
 }
 
-
- const progressTimer = gsap
-   .from(".bar", {
-     scaleX: 0,
-     transformOrigin: "0% 50%",
-     duration: 3,
-     onComplete: () => {
-      nextSlide()
+const progressTimer = gsap
+  .from(".bar", {
+    scaleX: 0,
+    transformOrigin: "0% 50%",
+    duration: 3,
+    onComplete: () => {
+      nextSlide();
       //  tl.play();
       //  gsap.to(".bar", { opacity: 0, duration: 0.2 });
-     },
-   })
-   .pause();
-
-
- autoPlaytBtn.addEventListener("change", (e) => {
-    // console.log("changed");
-   if (e.currentTarget.checked) {
-     nextSlide()
-     autoPlay = true;
-   } else {
-     progressTimer.pause(0)
-     autoPlay = false;
-   }
- });
-
-const dots = gsap.utils.toArray(".dot")
-
-dots.forEach(function(dot, index){
-  dot.addEventListener("click", function()  {
-    slideIndex = index
-    hideSlide()
+    },
   })
-})
+  .pause();
+
+autoPlaytBtn.addEventListener("change", (e) => {
+  // console.log("changed");
+  if (e.currentTarget.checked) {
+    nextSlide();
+    autoPlay = true;
+  } else {
+    progressTimer.pause(0);
+    autoPlay = false;
+  }
+});
+
+function stopAutoplay() {
+  autoPlaytBtn.checked = false;
+  autoPlaytBtn.dispatchEvent(new Event("change"));
+}
+
+const dots = gsap.utils.toArray(".dot");
+
+dots.forEach(function (dot, index) {
+  dot.addEventListener("click", function () {
+    slideIndex = index;
+    if (autoPlay) {
+      stopAutoplay();
+    }
+    hideSlide();
+  });
+});
 
 // const progressTimer = gsap
 //   .from(".bar", {
